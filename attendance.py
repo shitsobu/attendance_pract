@@ -3,7 +3,7 @@ import os
 from datetime import datetime
 
 DATA_FILE = 'attendance.csv'
-LATE_MINUTES = 5  # Допустимое количество минут опоздания
+LATE_MINUTES = 10  # Допустимое количество минут опоздания
 LESSON_START = "09:00"  # Время начала занятия
 
 def init_csv():

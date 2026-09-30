@@ -9,11 +9,15 @@ def test_is_late():
     assert is_late("2026-09-30 09:00:00") == 'present'
     
     # В пределах LATE_MINUTES — не опоздание
-    assert is_late("2026-09-30 09:04:00") == 'present'
-    assert is_late("2026-09-30 09:05:00") == 'present'
+    assert is_late("2026-09-30 09:09:00") == 'present'
+    assert is_late("2026-09-30 09:10:00") == 'present'
+    
+    # Тест точной границы: 09:10:00 — ещё не опоздание, 09:10:01 — уже опоздание
+    assert is_late("2026-09-30 09:10:00") == 'present'  # граница снизу
+    assert is_late("2026-09-30 09:10:01") == 'late'    # граница сверху
     
     # После LATE_MINUTES — опоздание
-    assert is_late("2026-09-30 09:06:00") == 'late'
+    assert is_late("2026-09-30 09:11:00") == 'late'
     assert is_late("2026-09-30 10:30:00") == 'late'
     
     print(f"Все тесты пройдены! Допустимое опоздание: {LATE_MINUTES} минут после {LESSON_START}")
