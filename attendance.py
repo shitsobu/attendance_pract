@@ -9,18 +9,20 @@ def init_csv():
     if not os.path.exists(DATA_FILE):
         with open(DATA_FILE, 'w', newline='', encoding='utf-8') as f:
             writer = csv.writer(f)
-            writer.writerow(['ID', 'Student Name', 'Date', 'Status'])
+            writer.writerow(['ID', 'Student Name', 'Login Time', 'Logout Time', 'Duration'])
 
-def add_attendance(student_name, status):
-    """Добавляет новую запись о посещении."""
+def register_login(student_name):
+    """Регистрирует вход студента."""
     init_csv()
     record_id = datetime.now().strftime("%Y%m%d%H%M%S")
-    date = datetime.now().strftime("%Y-%m-%d %H:%M")
+    login_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     
     with open(DATA_FILE, 'a', newline='', encoding='utf-8') as f:
         writer = csv.writer(f)
-        writer.writerow([record_id, student_name, date, status])
-    print(f"Запись для {student_name} успешно добавлена.\n")
+        writer.writerow([record_id, student_name, login_time, '', ''])
+    
+    print(f"Вход {student_name} зарегистрирован в {login_time}")
+    return record_id
 
 def show_attendance():
     """Выводит все записи из файла."""
@@ -38,7 +40,7 @@ def show_attendance():
 if __name__ == "__main__":
     print("=== Система учета посещений ===")
     while True:
-        print("1. Добавить посещение")
+        print("1. Зарегистрировать вход")
         print("2. Показать все записи")
         print("0. Выход")
         
@@ -46,8 +48,7 @@ if __name__ == "__main__":
         
         if choice == '1':
             name = input("Введите имя студента: ")
-            status = input("Введите статус (present/absent/late): ")
-            add_attendance(name, status)
+            register_login(name)
         elif choice == '2':
             show_attendance()
         elif choice == '0':
