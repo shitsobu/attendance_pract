@@ -3,7 +3,8 @@ import os
 from datetime import datetime
 
 DATA_FILE = 'attendance.csv'
-LATE_THRESHOLD = "09:15"  # Время, после которого посещение считается опозданием
+LATE_MINUTES = 5  # Допустимое количество минут опоздания
+LESSON_START = "09:00"  # Время начала занятия
 
 def init_csv():
     """Создает файл с заголовками, если его еще нет."""
@@ -19,14 +20,15 @@ def is_late(login_time_str):
         login_time_str: строка времени в формате '%Y-%m-%d %H:%M:%S'
     
     Returns:
-        'late' если время позже LATE_THRESHOLD, иначе 'present'
+        'late' если время позже (LESSON_START + LATE_MINUTES), иначе 'present'
     """
     try:
         login_dt = datetime.strptime(login_time_str, "%Y-%m-%d %H:%M:%S")
-        threshold_dt = datetime.strptime(LATE_THRESHOLD, "%H:%M").replace(
+        start_dt = datetime.strptime(LESSON_START, "%H:%M").replace(
             year=login_dt.year, month=login_dt.month, day=login_dt.day
         )
-        return 'late' if login_dt > threshold_dt else 'present'
+        deadline = start_dt.replace(minute=start_dt.minute + LATE_MINUTES)
+        return 'late' if login_dt > deadline else 'present'
     except ValueError:
         return 'present'
 
