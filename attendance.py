@@ -3,25 +3,45 @@ import os
 from datetime import datetime
 
 DATA_FILE = 'attendance.csv'
+LATE_THRESHOLD = "09:15"  # Время, после которого посещение считается опозданием
 
 def init_csv():
     """Создает файл с заголовками, если его еще нет."""
     if not os.path.exists(DATA_FILE):
         with open(DATA_FILE, 'w', newline='', encoding='utf-8') as f:
             writer = csv.writer(f)
-            writer.writerow(['ID', 'Student Name', 'Login Time', 'Logout Time', 'Duration'])
+            writer.writerow(['ID', 'Student Name', 'Login Time', 'Logout Time', 'Duration', 'Status'])
+
+def is_late(login_time_str):
+    """Определяет, является ли время входа опозданием.
+    
+    Args:
+        login_time_str: строка времени в формате '%Y-%m-%d %H:%M:%S'
+    
+    Returns:
+        'late' если время позже LATE_THRESHOLD, иначе 'present'
+    """
+    try:
+        login_dt = datetime.strptime(login_time_str, "%Y-%m-%d %H:%M:%S")
+        threshold_dt = datetime.strptime(LATE_THRESHOLD, "%H:%M").replace(
+            year=login_dt.year, month=login_dt.month, day=login_dt.day
+        )
+        return 'late' if login_dt > threshold_dt else 'present'
+    except ValueError:
+        return 'present'
 
 def register_login(student_name):
     """Регистрирует вход студента."""
     init_csv()
     record_id = datetime.now().strftime("%Y%m%d%H%M%S")
     login_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    status = is_late(login_time)
     
     with open(DATA_FILE, 'a', newline='', encoding='utf-8') as f:
         writer = csv.writer(f)
-        writer.writerow([record_id, student_name, login_time, '', ''])
+        writer.writerow([record_id, student_name, login_time, '', '', status])
     
-    print(f"Вход {student_name} зарегистрирован в {login_time}")
+    print(f"Вход {student_name} зарегистрирован в {login_time} (статус: {status})")
     return record_id
 
 def register_logout(record_id):
@@ -59,7 +79,6 @@ def calculate_duration(record_id):
                 logout_time = datetime.strptime(row[3], "%Y-%m-%d %H:%M:%S")
                 duration = int((logout_time - login_time).total_seconds() / 60)
                 
-                # Обновляем файл с длительностью
                 rows = []
                 with open(DATA_FILE, 'r', encoding='utf-8') as f2:
                     reader2 = csv.reader(f2)
@@ -86,10 +105,10 @@ def show_attendance():
         
     with open(DATA_FILE, 'r', encoding='utf-8') as f:
         reader = csv.reader(f)
-        print("-" * 60)
+        print("-" * 80)
         for row in reader:
             print(" | ".join(row))
-        print("-" * 60 + "\n")
+        print("-" * 80 + "\n")
 
 if __name__ == "__main__":
     print("=== Система учета посещений ===")
