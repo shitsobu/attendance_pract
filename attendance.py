@@ -45,6 +45,39 @@ def register_logout(record_id):
     else:
         print(f"Запись {record_id} не найдена")
 
+def calculate_duration(record_id):
+    """Рассчитывает длительность посещения в минутах."""
+    with open(DATA_FILE, 'r', encoding='utf-8') as f:
+        reader = csv.reader(f)
+        for row in reader:
+            if row[0] == record_id:
+                if not row[3]:
+                    print(f"Выход еще не зарегистрирован для записи {record_id}")
+                    return None
+                    
+                login_time = datetime.strptime(row[2], "%Y-%m-%d %H:%M:%S")
+                logout_time = datetime.strptime(row[3], "%Y-%m-%d %H:%M:%S")
+                duration = int((logout_time - login_time).total_seconds() / 60)
+                
+                # Обновляем файл с длительностью
+                rows = []
+                with open(DATA_FILE, 'r', encoding='utf-8') as f2:
+                    reader2 = csv.reader(f2)
+                    for r in reader2:
+                        if r[0] == record_id:
+                            r[4] = str(duration)
+                        rows.append(r)
+                
+                with open(DATA_FILE, 'w', newline='', encoding='utf-8') as f2:
+                    writer = csv.writer(f2)
+                    writer.writerows(rows)
+                
+                print(f"Длительность посещения: {duration} минут")
+                return duration
+    
+    print(f"Запись {record_id} не найдена")
+    return None
+
 def show_attendance():
     """Выводит все записи из файла."""
     if not os.path.exists(DATA_FILE):
@@ -63,7 +96,8 @@ if __name__ == "__main__":
     while True:
         print("1. Зарегистрировать вход")
         print("2. Зарегистрировать выход")
-        print("3. Показать все записи")
+        print("3. Рассчитать длительность")
+        print("4. Показать все записи")
         print("0. Выход")
         
         choice = input("Выберите действие: ")
@@ -75,6 +109,9 @@ if __name__ == "__main__":
             record_id = input("Введите ID записи: ")
             register_logout(record_id)
         elif choice == '3':
+            record_id = input("Введите ID записи: ")
+            calculate_duration(record_id)
+        elif choice == '4':
             show_attendance()
         elif choice == '0':
             print("Завершение работы.")
